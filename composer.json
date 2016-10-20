@@ -1,0 +1,20 @@
+{
+   "name": "dralnegar/central",
+   "description": "Central PHP Development Tools",
+   "type": "library",
+    "authors": [
+   {
+            "name": "Stefan Harvey",
+            "email": "stefan.harvey@btopenworld.com"
+   }
+    ],
+   "minimum-stability": "dev",
+   "require": {
+   "php": ">=5.3.0"
+   },
+   "autoload": {
+      "psr-0": {
+         "Central": "src"
+      }
+   }
+}
