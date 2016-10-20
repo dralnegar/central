@@ -20,7 +20,7 @@
  */
 namespace Central;
 
-class CentralPDOMySQL {
+class CentralPDOMySQL{
 
     public $link = "";
     public $result = "";
@@ -41,15 +41,15 @@ class CentralPDOMySQL {
 		if (($host != "") && ($username != "") && ($database != "")) { // Not testing password because the password may be blank.
             try {
                 
-				$this->link = new PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', $username, $password);
-            } catch (PDOException $e) {
+				$this->link = new \PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', $username, $password);
+            } catch (\PDOException $e) {
                 $code    = $e->getCode();
 				$message = $e->getMessage();
                 $message = "Error: " . $code . ': ' . $message . " - Query: " . $query;
                 $this->recordError($message);
             }
-            $this->link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            // $this->link->setAttribute(PDO::ATTR_EMULATE_PREPARED, false);
+            $this->link->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            // $this->link->setAttribute(\PDO::ATTR_EMULATE_PREPARED, false);
 			$this->errorPath = $_SERVER['DOCUMENT_ROOT'].$this->errorPath;
         }
     }
@@ -98,7 +98,7 @@ class CentralPDOMySQL {
         // echo "<span style=\"color:black\">QUERY:".$query."<br/></span>";
         try {
 		    $this->result = $this->link->query($query);
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             echo '<pre>';
             var_dump($e);
             echo '</pre>';
@@ -122,7 +122,7 @@ class CentralPDOMySQL {
     public function insertId() {
         try {
             $id = $this->link->lastInsertId();
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
 			$code    = $e->getCode();
 			$message = $e->getMessage();
             $message = "Error: " . $code . ': ' . $message . " - Query: " . $query;
@@ -139,7 +139,7 @@ class CentralPDOMySQL {
      * @return 	array 	$return	results of query
      */
     public function fetchAssoc() {
-        $return = $this->result->fetch(PDO::FETCH_ASSOC);
+        $return = $this->result->fetch(\PDO::FETCH_ASSOC);
         return $return;
     }
 
@@ -153,7 +153,7 @@ class CentralPDOMySQL {
     public function freeResult() {
         try {
             $this->result->closeCursor();
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $code    = $e->getCode();
 			$message = $e->getMessage();
             $message = "Error: " . $code . ': ' . $message . " - Query: " . $query;
@@ -183,7 +183,7 @@ class CentralPDOMySQL {
     public function affectedRows() {
         try {
             $return = $this->result->rowCount();
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $details = $e->errorInfo();
             $code    = $e->getCode();
 			$message = $e->getMessage();
@@ -203,7 +203,7 @@ class CentralPDOMySQL {
     public function close() {
         try {
             $this->link = null;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $code    = $e->getCode();
 			$message = $e->getMessage();
 			$message = "close: " . $code . ': ' . $message . " - Query: " . $query;
@@ -234,7 +234,7 @@ class CentralPDOMySQL {
      */
     public function multiRow($query) {
         $this->query($query);
-        $rows = $this->result->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->result->fetchAll(\PDO::FETCH_ASSOC);
         $this->freeResult();
         return $rows;
     }
