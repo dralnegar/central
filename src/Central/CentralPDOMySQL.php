@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @Filename: CentralPDOMySQL.php
  * Location: /Central
