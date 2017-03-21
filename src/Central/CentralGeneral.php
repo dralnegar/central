@@ -1453,7 +1453,7 @@ class CentralGeneral
 		
   //===================================================================================================================================
   /**
-   * Return jquery code that will cause text of a spefic div to change color when hovered over
+   * Return jquery code that will majcause text of a spefic div to change color when hovered over
    * @param string the original color of the text
    * @param string the original background color of the div
    * @return coverted string value
@@ -2270,6 +2270,30 @@ class CentralGeneral
 	}
 	 //*********************************************************************************************************************************
 
+	
+	/***********************************************************************************************************************************/
+	/**
+	* nl2p: Return a string of text with paragraphs surrounded by <p> tags
+ 	* @param 	string	$str	String to be converted
+	* @return	string	$out	Converted string
+	*/
+	function nl2p($str) 
+	{
+		$arr = explode(PHP_EOL,$str);
+		$out = '';
+
+		for($i=0; $i<count($arr); $i++):
+
+			if(strlen(trim($arr[$i]))>0):
+				$out.='<p>'.trim($arr[$i]).'</p>';
+			endif;
+
+		endfor;
+
+		return $out;
+	}
+	/**********************************************************************************************************************************/
+	
 }
 
 

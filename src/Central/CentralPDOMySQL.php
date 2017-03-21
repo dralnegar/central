@@ -93,7 +93,7 @@ class CentralPDOMySQL{
 		endif;
 		
 		$fh = fopen($_SERVER['DOCUMENT_ROOT'].$this->errorPath, $action);
-        fwrite($fh, date('d/m/Y H:i:s', time()) . ' - ' . $errorString . PHH_EOL);
+        fwrite($fh, date('d/m/Y H:i:s', time()) . ' - ' . $errorString . PHP_EOL);
         fclose($fh);
         die('Unfortunately a server error has occurred. Please try again later.');
     }
