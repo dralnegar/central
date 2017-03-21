@@ -1248,7 +1248,7 @@ class CentralGeneral
   {
     // $variable = strip_tags($variable); I have no idea whether this is the correct one
     $variable = htmlentities($variable);
-    $variable = CentralMySQL::escapeString(trim($variable));
+    $variable = CentralPDOMySQL::escapeString(trim($variable));
     return $variable; 
   }
   //===================================================================================================================================
