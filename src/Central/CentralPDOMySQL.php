@@ -10,6 +10,9 @@
  * 				 no longer mandatory.
  *  20160531 SAH Changed constructor (_construct) to correct the use of the $e->getErrorDetails and use $e->getCode and $e->getMessage instead. Also changed 
  *               recordError() to use $_SERVER['DOCUMENT_ROOT'] at the front of the file being opened, as it wasn't working with it on some servers
+ *  20170323 SAH Change constructor to check for a valid host, before trying to make a connection, added option to define message image shown to the 
+ *				 user when an error occurs, and make sure the DOCUMENT_ROOT is removed from the front of the error path before appending, so that it
+ *               doesn't appear twice.
  */
 /*
   // In order to use this file as a codeigniter model the file name must be 'centralpdomysql.php' in lowercase and you must use 
@@ -19,12 +22,13 @@
  */
 namespace Central;
 
-class CentralPDOMySQL{
+class CentralPDOMySQL
+{
 
-    public $link = '';
-    public $result = '';
-    public $errorPath = 'mysql_log.txt';
-	
+    public $link         = '';
+    public $result       = '';
+    public $errorPath    = 'mysql_log.txt';
+	public $errorMessage = 'Unfortunately a server error has occurred. Please try again later.';	
 
     //***************************************************************************************************************************************
     /**
@@ -33,20 +37,52 @@ class CentralPDOMySQL{
      * @param 	string	$username: The username to connect to the database with
      * @param 	string	$password: the password to connect to the database with, can be blank e.g. working on a local machine rather than a server
      * @param	string	$database: The name the database being connected to
-	 * @param	string	$errorPath: Overwride the default log file
+	 * @param	string	$errorPath: Override the default log file
+	 * @param	string	$errorMessage: Override the default error message show to the user on error
      * @return	none
      */
-    public function __construct($host = '', $username = '', $password = '', $database = '', $errorPath = '') 
+    public function __construct($host = '', $username = '', $password = '', $database = '', $errorPath = '', $errorMessage='') 
 	{
 
 		if ($errorPath!=''):
 			$this->setErrorFile($errorPath);
 		endif;	
 		
+		if ($errorMessage!=''):
+			$this->setErrorMessage($errorMessage);
+		endif;	
+		
+		$this->errorPath = $_SERVER['DOCUMENT_ROOT'].str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->errorPath);
+				
 		if (($host != '') && ($username != '') && ($database != '')): // Not testing password because the password may be blank.
-            try 
+            
+			if (!filter_var($host, FILTER_VALIDATE_IP) === false) 
 			{
-				$this->link = new \PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', $username, $password);
+    			// The host is an ip address so no problem
+			} 
+			else 
+			{
+    			// The host is a hostname, so we need to check it exists
+				$ipaddress = gethostbyname($host);
+									
+				if (!filter_var($ipaddress, FILTER_VALIDATE_IP) === false) 
+				{
+					// We have correctly found the ipaddress for this domain, 
+				}
+				else
+				{
+					// No ipaddress can be extracted so the hostname doesn't exist
+					$message = 'Error: '.$host.' is not a valid domain or ipaddress';
+                	$this->recordError($message);					
+				}
+			}
+	
+			try 
+			{
+				$this->link = new \PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', 
+									   $username, 
+									   $password, 
+									   array(\PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION));
             } 
 			catch (\PDOException $e) 
 			{
@@ -55,9 +91,8 @@ class CentralPDOMySQL{
                 $message = 'Error: ' . $code . ': ' . $message;
                 $this->recordError($message);
             }
-            $this->link->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            // $this->link->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             // $this->link->setAttribute(\PDO::ATTR_EMULATE_PREPARED, false);
-			$this->errorPath = $_SERVER['DOCUMENT_ROOT'].$this->errorPath;
     	endif;
     }
 
@@ -74,6 +109,18 @@ class CentralPDOMySQL{
         $this->errorPath = $errorPath;
     }
     //***************************************************************************************************************************************
+	
+	//*************************************************************************************************************************************** 
+    /**
+     * setErrorMessage: Set the default error message shown to the user when a database error occurs
+     * @param	string	$errorPath: File path to where to record errors
+     * @return	none
+     */
+    public function setErrorMessage($errorMessage) 
+	{
+        $this->errorMessage = $errorMessage;
+    }
+    //***************************************************************************************************************************************
     
 	//*************************************************************************************************************************************** 
     /**
@@ -83,19 +130,18 @@ class CentralPDOMySQL{
      */
     private function recordError($errorString) 
 	{
-        
 		$this->errorPath = str_replace('/', DIRECTORY_SEPARATOR, $this->errorPath);
 		
-		if (!file_exists($_SERVER['DOCUMENT_ROOT'].$this->errorPath)):
+		if (!file_exists($this->errorPath)):
 			$action = 'w+';
 		else:
 			$action = 'a+';
 		endif;
 		
-		$fh = fopen($_SERVER['DOCUMENT_ROOT'].$this->errorPath, $action);
+		$fh = fopen($this->errorPath, $action);
         fwrite($fh, date('d/m/Y H:i:s', time()) . ' - ' . $errorString . PHP_EOL);
         fclose($fh);
-        die('Unfortunately a server error has occurred. Please try again later.');
+        die($this->errorMessage);
     }
 	 //***************************************************************************************************************************************
 
@@ -463,7 +509,8 @@ class CentralPDOMySQL{
      * @param	string	$rawString: String to escap	
      * @return	string	$return:	Escaped String
      */
-    function escapeString($string) {
+    function escapeString($string) 
+	{
        	$withoutSlashes = stripslashes($string);
 		$withSlashes    = addslashes($withoutSlashes);
 		$return         = $withSlashes;
