@@ -1248,7 +1248,7 @@ class CentralGeneral
   {
     // $variable = strip_tags($variable); I have no idea whether this is the correct one
     $variable = htmlentities($variable);
-    $variable = CentralPDOMySQL::escapeString(trim($variable));
+    $variable = self::dbEscapeString(trim($variable));
     return $variable; 
   }
   //===================================================================================================================================
@@ -2293,6 +2293,21 @@ class CentralGeneral
 		return $out;
 	}
 	/**********************************************************************************************************************************/
+	
+	//***************************************************************************************************************************************
+    /**
+     * dbEscapeString:	Escape the a string so it can be safely used in mysql queries
+     * @param	string	$rawString: String to escap	
+     * @return	string	$return:	Escaped String
+     */
+    public static function dbEscapeString($string) 
+	{
+       	$withoutSlashes = stripslashes($string);
+		$withSlashes    = addslashes($withoutSlashes);
+		$return         = $withSlashes;
+        return $return;
+    }
+    //***************************************************************************************************************************************
 	
 }
 
