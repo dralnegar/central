@@ -13,7 +13,9 @@
  *  20170323 SAH Change constructor to check for a valid host, before trying to make a connection, added option to define message image shown to the 
  *				 user when an error occurs, and make sure the DOCUMENT_ROOT is removed from the front of the error path before appending, so that it
  *               doesn't appear twice.
+ *  20171010 SAH Changed escapeString function to be public static, and added check for the first letter of the error path is a slash, if not it will add one
  */
+
 /*
   // In order to use this file as a codeigniter model the file name must be 'centralpdomysql.php' in lowercase and you must use 
   class CentralPDO extends CI_Model
@@ -52,7 +54,12 @@ class CentralPDOMySQL
 			$this->setErrorMessage($errorMessage);
 		endif;	
 		
-		$this->errorPath = $_SERVER['DOCUMENT_ROOT'].str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->errorPath);
+		$this->errorPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->errorPath);
+		if (substr(0, 1, $this->errorPath)!='/'):
+			$this->errorPath = '/'.$this->errorPath;
+		endif;
+		
+		$this->errorPath = $_SERVER['DOCUMENT_ROOT'].$this->errorpath;
 				
 		if (($host != '') && ($username != '') && ($database != '')): // Not testing password because the password may be blank.
             
@@ -509,7 +516,7 @@ class CentralPDOMySQL
      * @param	string	$rawString: String to escap	
      * @return	string	$return:	Escaped String
      */
-    function escapeString($string) 
+    public static function escapeString($string) 
 	{
        	$withoutSlashes = stripslashes($string);
 		$withSlashes    = addslashes($withoutSlashes);
