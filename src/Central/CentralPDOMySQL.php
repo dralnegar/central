@@ -55,7 +55,7 @@ class CentralPDOMySQL
 		endif;	
 		
 		$this->errorPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->errorPath);
-		if (substr(0, 1, $this->errorPath)!='/'):
+		if (substr($this->errorPath, 0, 1)!='/'):
 			$this->errorPath = '/'.$this->errorPath;
 		endif;
 		
