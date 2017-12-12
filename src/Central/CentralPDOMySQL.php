@@ -14,6 +14,7 @@
  *				 user when an error occurs, and make sure the DOCUMENT_ROOT is removed from the front of the error path before appending, so that it
  *               doesn't appear twice.
  *  20171010 SAH Changed escapeString function to be public static, and added check for the first letter of the error path is a slash, if not it will add one
+ *  20171211 SAH Added functionality to continue after an error has been recorded in the log file rather than showing an error to the screen
  */
 
 /*
@@ -27,10 +28,12 @@ namespace Central;
 class CentralPDOMySQL
 {
 
-    public $link         = '';
-    public $result       = '';
-    public $errorPath    = 'mysql_log.txt';
-	public $errorMessage = 'Unfortunately a server error has occurred. Please try again later.';	
+    public $link          = '';
+    public $result        = '';
+    public $errorPath     = 'mysql_log.txt';
+	public $errorMessage  = 'Unfortunately a server error has occurred. Please try again later.';
+	public $errorContinue = 'stop';
+	public $active		  = true;
 
     //***************************************************************************************************************************************
     /**
@@ -41,9 +44,10 @@ class CentralPDOMySQL
      * @param	string	$database: The name the database being connected to
 	 * @param	string	$errorPath: Override the default log file
 	 * @param	string	$errorMessage: Override the default error message show to the user on error
+	 * @param	string	$errorContinue: If 'continue', with database error, the script will continue rather than die with the error message 
      * @return	none
      */
-    public function __construct($host = '', $username = '', $password = '', $database = '', $errorPath = '', $errorMessage='') 
+    public function __construct($host = '', $username = '', $password = '', $database = '', $errorPath = '', $errorMessage='', $errorContinue='stop') 
 	{
 
 		if ($errorPath!=''):
@@ -53,6 +57,8 @@ class CentralPDOMySQL
 		if ($errorMessage!=''):
 			$this->setErrorMessage($errorMessage);
 		endif;	
+		
+		$this->errorContinue = $errorContinue; // If set to 'continue', the error will be recorded in the log file, but the script will continue after error
 		
 		$this->errorPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->errorPath);
 		if (substr($this->errorPath, 0, 1)!='/'):
@@ -129,7 +135,7 @@ class CentralPDOMySQL
     }
     //***************************************************************************************************************************************
     
-	//*************************************************************************************************************************************** 
+	/*************************************************************************************************************************************** 
     /**
      * recordError: Record in a log file when an error occures
      * @param	string	$errorString: error message to record
@@ -148,7 +154,11 @@ class CentralPDOMySQL
 		$fh = fopen($this->errorPath, $action);
         fwrite($fh, date('d/m/Y H:i:s', time()) . ' - ' . $errorString . PHP_EOL);
         fclose($fh);
-        die($this->errorMessage);
+		
+        if ($this->errorContinue=='stop'):
+			die($this->errorMessage);
+		endif;
+		$this->active = false;
     }
 	 //***************************************************************************************************************************************
 
