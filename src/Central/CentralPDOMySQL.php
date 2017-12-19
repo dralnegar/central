@@ -15,8 +15,9 @@
  *               doesn't appear twice.
  *  20171010 SAH Changed escapeString function to be public static, and added check for the first letter of the error path is a slash, if not it will add one
  *  20171211 SAH Added functionality to continue after an error has been recorded in the log file rather than showing an error to the screen
+ *  20171219 SAH BUG: Changed $errorpath to $errorPath on line 68. It was causing as issue in codeigniiter build
  */
-
+ 
 /*
   // In order to use this file as a codeigniter model the file name must be 'centralpdomysql.php' in lowercase and you must use 
   class CentralPDO extends CI_Model
@@ -65,7 +66,7 @@ class CentralPDOMySQL
 			$this->errorPath = '/'.$this->errorPath;
 		endif;
 		
-		$this->errorPath = $_SERVER['DOCUMENT_ROOT'].$this->errorpath;
+		$this->errorPath = $_SERVER['DOCUMENT_ROOT'].$this->errorPath;
 				
 		if (($host != '') && ($username != '') && ($database != '')): // Not testing password because the password may be blank.
             
