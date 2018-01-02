@@ -16,6 +16,7 @@
  *  20171010 SAH Changed escapeString function to be public static, and added check for the first letter of the error path is a slash, if not it will add one
  *  20171211 SAH Added functionality to continue after an error has been recorded in the log file rather than showing an error to the screen
  *  20171219 SAH BUG: Changed $errorpath to $errorPath on line 68. It was causing as issue in codeigniiter build
+ *  20180102 SAH MOD: Changed connection failure error message to include host and database
  */
  
 /*
@@ -102,7 +103,7 @@ class CentralPDOMySQL
 			{
                 $code    = $e->getCode();
 				$message = $e->getMessage();
-                $message = 'Error: ' . $code . ': ' . $message;
+                $message = 'Error: ' . $code . ': ' . $message.' (host:'.$host.') (database:'.$database.')';
                 $this->recordError($message);
             }
             // $this->link->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
